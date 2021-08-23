@@ -131,3 +131,4 @@ extern void makeStringsForLCD(DATE *date, TIME *time, ALARM *alarm);
 extern void ReadSensors(void);
 extern void printCurrentMenuOnLCD(MENU_SCREEN menuLCD);
 extern void SetDate(uint8_t  d , uint8_t  m, uint8_t yOff );
+extern void SetTime(uint8_t  h, uint8_t  m, uint8_t s);
