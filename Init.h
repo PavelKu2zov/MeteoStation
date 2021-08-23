@@ -26,9 +26,9 @@
 #define SCREEN_TIME_POS                 (7)
 #define SCREEN_ALARM_POS                (8)
 #define LCD_NUM_SYMBOL_IN_ROW			(14)
-#define SCREEN_DATE_DAY_POS             (LCD_NUMBER_PIXELS_WIDE_SYMBOL * 7)
-#define SCREEN_DATE_MONTH_POS           (LCD_NUMBER_PIXELS_WIDE_SYMBOL * 10)
-#define SCREEN_DATE_YEAR_POS            (LCD_NUMBER_PIXELS_WIDE_SYMBOL * 13)
+#define SCREEN_DATE_DAY_POS             (LCD_NUMBER_PIXELS_WIDE_SYMBOL * 6)
+#define SCREEN_DATE_MONTH_POS           (LCD_NUMBER_PIXELS_WIDE_SYMBOL * 9)
+#define SCREEN_DATE_YEAR_POS            (LCD_NUMBER_PIXELS_WIDE_SYMBOL * 12)
        
 typedef enum MENU_SCREEN_enum
 {
