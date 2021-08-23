@@ -278,17 +278,17 @@ void write2sd(void)
         {
             if (DAY == menuDate.state)
             {
-                if((menuDate.date.month == 1) || (menuDate.date.month == 3) || (menuDate.date.month == 5) || (menuDate.date.month == 7)\
-                    || (menuDate.date.month == 8) || (menuDate.date.month == 10) || (menuDate.date.month == 12) || (menuDate.date.day != 31))
+                if(((menuDate.date.month == 1) || (menuDate.date.month == 3) || (menuDate.date.month == 5) || (menuDate.date.month == 7)\
+                    || (menuDate.date.month == 8) || (menuDate.date.month == 10) || (menuDate.date.month == 12)) && (menuDate.date.day != 31))
                 {
                     menuDate.date.day++; 
                 }
-                else if ((menuDate.date.month == 4) || (menuDate.date.month == 6) || (menuDate.date.month == 9) || (menuDate.date.month == 11)
-                    || (menuDate.date.day != 30))
+                else if (((menuDate.date.month == 4) || (menuDate.date.month == 6) || (menuDate.date.month == 9) || (menuDate.date.month == 11))
+                    && (menuDate.date.day != 30))
                 {
                     menuDate.date.day++;
                 }
-                else if ((menuDate.date.month == 2) || (menuDate.date.day != 28))
+                else if ((menuDate.date.month == 2) && (menuDate.date.day != 28))
                 {
                     menuDate.date.day++;
                 }                    
@@ -341,6 +341,7 @@ void write2sd(void)
         else if (BUTTON_SELECT == buttonNum)// select
         {
             SetDate(menuDate.date.day, menuDate.date.month, menuDate.date.year);
+            timeCurrent = RTClib::now();  // чтение текущего времени
             menuLCD = MAIN_MENU;
         }
         printCurrentMenuOnLCD(menuLCD);
