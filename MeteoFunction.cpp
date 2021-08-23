@@ -349,9 +349,117 @@ void write2sd(void)
 /*------------------------------ TIME menu ----------------------------*/
     else if (TIME_MENU == menuLCD)
     {
-      
+        if (BUTTON_DOWN == buttonNum)// down
+        {
+            if (HOUR == menuTime.state)
+            {
+                if (menuTime.time.hour == 0)
+                {
+                    menuTime.time.hour == 23;
+                }
+                else
+                {
+                    menuTime.time.hour--;
+                }                    
+            }
+            else if (MINUTE == menuTime.state)
+            {
+                if (menuTime.time.minute == 0)
+                {
+                    menuTime.time.minute = 59;
+                }
+                else
+                {
+                    menuTime.time.minute--;
+                }
+            }
+            else if (SECOND == menuTime.state)
+            {
+                if (menuTime.time.second == 0)
+                {
+                    menuTime.time.second = 59;
+                }
+                else
+                {
+                    menuTime.time.second--;
+                }
+            }
+        }  
+        else if (BUTTON_UP == buttonNum)// up
+        {
+            if (HOUR == menuTime.state)
+            {
+                if (menuTime.time.hour == 23)
+                {
+                    menuTime.time.hour == 0;
+                }
+                else
+                {
+                    menuTime.time.hour++;
+                }                    
+            }
+            else if (MINUTE == menuTime.state)
+            {
+                if (menuTime.time.minute == 59)
+                {
+                    menuTime.time.minute = 0;
+                }
+                else
+                {
+                    menuTime.time.minute++;
+                }
+            }
+            else if (SECOND == menuTime.state)
+            {
+                if (menuTime.time.second == 59)
+                {
+                    menuTime.time.second = 0;
+                }
+                else
+                {
+                    menuTime.time.second++;
+                }
+            }
+        }
+        else if(BUTTON_LEFT == buttonNum)// left
+        {
+            if (HOUR == menuTime.state)
+            {
+               ;
+            }
+            else if (MINUTE == menuTime.state)
+            {
+                menuTime.state = HOUR;
+            }
+            else if (SECOND == menuTime.state)
+            {
+                menuTime.state = MINUTE;
+            }
+        }
+        else if(BUTTON_RIGHT == buttonNum)// right
+        {
+            if(HOUR == menuTime.state)
+            {
+                menuTime.state = MINUTE;
+            }
+            else if (MINUTE == menuTime.state)
+            {
+                menuTime.state = SECOND;
+            }
+            else if (SECOND == menuTime.state)
+            {
+                ;
+            } 
+        }
+        else if (BUTTON_SELECT == buttonNum)// select
+        {
+            SetTime(menuTime.time.hour, menuTime.time.minute, menuTime.time.second);
+            timeCurrent = RTClib::now();  // чтение текущего времени
+            menuLCD = MAIN_MENU; 
+        }
+        printCurrentMenuOnLCD(menuLCD);
     }
-/*--------------------------- ALARM menu ------------------------*/
+    /*--------------------------- ALARM menu ------------------------*/
     else if (ALARM_MENU == menuLCD)
     {
       
@@ -608,3 +716,25 @@ void SetDate(uint8_t  d , uint8_t  m, uint8_t yOff )
     rtc.setMonth(m);   // Устанавливаем месяц
     rtc.setYear(2000+yOff);    // Устанавливаем год    
 }// end of SetDate()
+
+
+
+//**************************************************************************************************
+// @Function      SetTime()
+//--------------------------------------------------------------------------------------------------
+// @Description   Set time in RTC
+//--------------------------------------------------------------------------------------------------
+// @Notes         None.  
+//--------------------------------------------------------------------------------------------------
+// @ReturnValue   None.
+//--------------------------------------------------------------------------------------------------
+// @Parameters    h -> hour,
+//                m -> minute
+//                s -> second
+//**************************************************************************************************
+void SetTime(uint8_t  h, uint8_t  m, uint8_t s)
+{
+    rtc.setSecond(s);        // устанавливаем секунды
+    rtc.setMinute(m);        // Устанавливаем минуты
+    rtc.setHour(h);          // Устанавливаем часы    
+}// end of SetTime()
