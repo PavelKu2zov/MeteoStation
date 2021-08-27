@@ -91,10 +91,14 @@ void setup()
     lcd.setBacklight(false);
     lcd.setCursor(0,5);
     lcd.setInverted(true);
-    lcd.print("Hello world!");
+	lcd.print("  ");
+		
+    lcd.print("Hello ");
+	lcd.print("world!");
     lcd.setInverted(false);
-    lcd.println("\nI am here.");
-    
+    //lcd.println("\nI am here.");
+    lcd.print("\nI am here.", 1, 2);
+	
     pinMode(PIN_INT1, INPUT);// пин для внешнего прерывания от RTC
     power.setSleepMode(POWERDOWN_SLEEP);// настройка сна IDLE_SLEEP - 
 
@@ -118,51 +122,53 @@ void setup()
 
     attachInterrupt(0,buttonPressed,FALLING); 
 
-  
+	menuDate.date.day = 1;
+	menuDate.date.month = 1;
+	menuDate.date.year = 1;
     
 }
 
 void loop()
 {
-	if (true == pressAnyButton)
-	{
-		ReadSensors();
-		LCDShow();
-		pressAnyButton = false;
-		timeOld = timeCurrent;
+  if (true == pressAnyButton)
+  {
+    ReadSensors();
+    LCDShow();
+    pressAnyButton = false;
+    timeOld = timeCurrent;
         timeDelay = millis();
         timeDelayOld = timeDelay;
-	}
+  }
   
-	if (true == alarmTime)
-	{
-		ReadSensors();
-		write2sd();
+  if (true == alarmTime)
+  {
+    ReadSensors();
+    write2sd();
         alarmTime = false;
-	}
-	
+  }
   
-	if (0)//((timeCurrent.unixtime() - timeOld.unixtime())>5)
-	{
-		rtc.checkIfAlarm(ALARM_1);// сбрасываем флаг ALARM_1
-		attachInterrupt(1, isr, FALLING);  // подключаем прерывание на пин D3 (Arduino NANO)
-		lcd.clear();
-		lcd.setCursor(0,2);
-		lcd.print("Sleep");
-		power.sleepDelay(0xffffffff);  // спим очень долго просыпаемся по прерыванию
-		lcd.clear(); 
-		lcd.print("Wakeup");
-	}
-	else
-	{
+  
+  if (0)//((timeCurrent.unixtime() - timeOld.unixtime())>5)
+  {
+    rtc.checkIfAlarm(ALARM_1);// сбрасываем флаг ALARM_1
+    attachInterrupt(1, isr, FALLING);  // подключаем прерывание на пин D3 (Arduino NANO)
+    lcd.clear();
+    lcd.setCursor(0,2);
+    lcd.print("Sleep");
+    power.sleepDelay(0xffffffff);  // спим очень долго просыпаемся по прерыванию
+    lcd.clear(); 
+    lcd.print("Wakeup");
+  }
+  else
+  {
         // читаем время RTC раз в секунду
-		timeDelay = millis();
-		if ((timeDelay - timeDelayOld)>1000)
+    timeDelay = millis();
+    if ((timeDelay - timeDelayOld)>1000)
         {
             timeCurrent = RTClib::now();  // чтение текущего времени
             timeDelayOld = timeDelay;
         }  
-	}
+  }
     
 
 }
