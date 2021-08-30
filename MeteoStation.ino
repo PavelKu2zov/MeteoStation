@@ -21,7 +21,7 @@ writing to 2 SDcard
 #include <SparkFun_LPS25HB_Arduino_Library.h>
 #include <SD.h> //sd карта
 #include <SPI.h> //sd карта
-#include <GyverPower.h> //sleep and wake up
+
 #include "buildTime.h" // для парсинга строки даты и времени, полученной при компиляции
 #include <Nokia_LCD.h> //nokia 5110 display
 #include "Init.h"
@@ -100,7 +100,7 @@ void setup()
     lcd.print("\nI am here.", 1, 2);
 	
     pinMode(PIN_INT1, INPUT);// пин для внешнего прерывания от RTC
-    power.setSleepMode(POWERDOWN_SLEEP);// настройка сна IDLE_SLEEP - 
+    
 
     pinMode(PIN_INT2, INPUT);// пин для внешнего прерывания от button
     
@@ -155,7 +155,7 @@ void loop()
     lcd.clear();
     lcd.setCursor(0,2);
     lcd.print("Sleep");
-    power.sleepDelay(0xffffffff);  // спим очень долго просыпаемся по прерыванию
+    
     lcd.clear(); 
     lcd.print("Wakeup");
   }
@@ -179,7 +179,7 @@ void loop()
 void isr() {
   // дёргаем за функцию "проснуться"
   // без неё проснёмся чуть позже (через 0-8 секунд)
-  power.wakeUp();
+  
   //Serial.println("\r\nISR");
   detachInterrupt(1);
   alarmTime = true;  
@@ -193,7 +193,7 @@ void isr() {
 /********************************обработчик прерывания по кнопке********************/ 
 void buttonPressed()          
 {   
- power.wakeUp();
+ 
  ADCSRA |= (1 << ADEN);
  buttonNum = whbuttonPressed();
  if (0 != buttonNum)
