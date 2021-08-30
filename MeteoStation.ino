@@ -1,17 +1,3 @@
-/*  2 ds18b20
-humidity am2305
-barometer 
-real time clock DS3231
-writing to 2 SDcard
-*/
-/********************************************************************/
-/*
- * TODO:
- * buron interrupt
- * monitor and watch setup menu and action
- * lorawan
- * sun battery
- */
 /********************************************************************/
 #include <OneWire.h> // для работы с датчиком температуры DS18B20
 #include <DallasTemperature.h> // для работы с датчиком температуры DS18B20
@@ -99,8 +85,8 @@ void setup()
     //lcd.println("\nI am here.");
     lcd.print("\nI am here.", 1, 2);
 	
-    pinMode(PIN_INT1, INPUT);// пин для внешнего прерывания от RTC
-    pinMode(PIN_INT2, INPUT);// пин для внешнего прерывания от button
+    pinMode(PIN_INT_ALARM, INPUT);// пин для внешнего прерывания от RTC
+    pinMode(PIN_INT_BUTTON, INPUT);// пин для внешнего прерывания от button
     set_sleep_mode(SLEEP_MODE_PWR_DOWN); // настройка режима сна
     
     
@@ -124,7 +110,7 @@ void setup()
 	menuDate.date.month = 1;
 	menuDate.date.year = 1;
     
-    attachInterrupt(INT_ALARM,, isrAlarm, FALLING);  // прерывание от RTC
+    attachInterrupt(INT_ALARM, isrAlarm, FALLING);  // прерывание от RTC
     attachInterrupt(INT_BUTTON,isrButtonPressed,FALLING); // прерывание от button
     
 }
@@ -152,8 +138,8 @@ void loop()
   if (0)//((timeCurrent.unixtime() - timeOld.unixtime())>5)
   {
     rtc.checkIfAlarm(ALARM_1);// сбрасываем флаг ALARM_1
-    attachInterrupt(INT_ALARM,isr,FALLING);  // прерывание от RTC
-    attachInterrupt(INT_BUTTON,buttonPressed,FALLING); // прерывание от button
+    attachInterrupt(INT_ALARM,isrAlarm,FALLING);  // прерывание от RTC
+    attachInterrupt(INT_BUTTON,isrButtonPressed,FALLING); // прерывание от button
     lcd.clear();
     lcd.setCursor(0,2);
     lcd.print("Sleep");
@@ -193,7 +179,7 @@ void isrAlarm()
 /********************************обработчик прерывания по кнопке********************/ 
 void isrButtonPressed()          
 {   
- //Serial.println("\r\nisr Button");
+ Serial.println("\r\nisr Button");
  ADCSRA |= (1 << ADEN);
  buttonNum = whbuttonPressed();
  if (0 != buttonNum)
