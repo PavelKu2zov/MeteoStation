@@ -8,7 +8,7 @@
 #include <SparkFun_LPS25HB_Arduino_Library.h>
 #include <SD.h> //sd карта
 #include <SPI.h> //sd карта
-
+#include <avr/sleep.h>
 #include "buildTime.h" // для парсинга строки даты и времени, полученной при компиляции
 #include <Nokia_LCD.h> //nokia 5110 display
 #include "Init.h"

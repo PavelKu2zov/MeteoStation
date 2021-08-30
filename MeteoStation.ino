@@ -21,7 +21,7 @@ writing to 2 SDcard
 #include <SparkFun_LPS25HB_Arduino_Library.h>
 #include <SD.h> //sd карта
 #include <SPI.h> //sd карта
-
+#include <avr/sleep.h>
 #include "buildTime.h" // для парсинга строки даты и времени, полученной при компиляции
 #include <Nokia_LCD.h> //nokia 5110 display
 #include "Init.h"
@@ -100,9 +100,9 @@ void setup()
     lcd.print("\nI am here.", 1, 2);
 	
     pinMode(PIN_INT1, INPUT);// пин для внешнего прерывания от RTC
-    
-
     pinMode(PIN_INT2, INPUT);// пин для внешнего прерывания от button
+    set_sleep_mode(SLEEP_MODE_PWR_DOWN); // настройка режима сна
+    
     
     sensors.begin();
     
@@ -120,11 +120,12 @@ void setup()
     rtc.setA1Time(0,0,0,10,0x0e, false, false, false);//setA1Time(byte A1Day, byte A1Hour, byte A1Minute, byte A1Second, byte AlarmBits, bool A1Dy, bool A1h12, bool A1PM)
     rtc.turnOnAlarm(1);
 
-    attachInterrupt(0,buttonPressed,FALLING); 
-
 	menuDate.date.day = 1;
 	menuDate.date.month = 1;
 	menuDate.date.year = 1;
+    
+    attachInterrupt(INT_ALARM,, isrAlarm, FALLING);  // прерывание от RTC
+    attachInterrupt(INT_BUTTON,isrButtonPressed,FALLING); // прерывание от button
     
 }
 
@@ -151,11 +152,12 @@ void loop()
   if (0)//((timeCurrent.unixtime() - timeOld.unixtime())>5)
   {
     rtc.checkIfAlarm(ALARM_1);// сбрасываем флаг ALARM_1
-    attachInterrupt(1, isr, FALLING);  // подключаем прерывание на пин D3 (Arduino NANO)
+    attachInterrupt(INT_ALARM,isr,FALLING);  // прерывание от RTC
+    attachInterrupt(INT_BUTTON,buttonPressed,FALLING); // прерывание от button
     lcd.clear();
     lcd.setCursor(0,2);
     lcd.print("Sleep");
-    
+    sleep_mode(); // Переводим МК в сон
     lcd.clear(); 
     lcd.print("Wakeup");
   }
@@ -176,12 +178,10 @@ void loop()
 
 
 /********************************обработчик аппаратного прерывания********************/ 
-void isr() {
-  // дёргаем за функцию "проснуться"
-  // без неё проснёмся чуть позже (через 0-8 секунд)
+void isrAlarm() 
+{   
   
-  //Serial.println("\r\nISR");
-  detachInterrupt(1);
+  //Serial.println("\r\nisr RTC");
   alarmTime = true;  
 }
 
@@ -191,9 +191,9 @@ void isr() {
 
 
 /********************************обработчик прерывания по кнопке********************/ 
-void buttonPressed()          
+void isrButtonPressed()          
 {   
- 
+ //Serial.println("\r\nisr Button");
  ADCSRA |= (1 << ADEN);
  buttonNum = whbuttonPressed();
  if (0 != buttonNum)
