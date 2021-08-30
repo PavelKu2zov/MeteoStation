@@ -2,8 +2,11 @@
 #define PIN_AM2305        4 // data pin AM2305
 #define PIN_CS_SD_CARD_1  31
 #define PIN_CS_SD_CARD_2  30
-#define PIN_INT1          2
-#define PIN_INT2          3
+#define PIN_INT_ALARM     19
+#define PIN_INT_BUTTON    18
+#define INT_ALARM         4// arduino pin 19, real int = int2
+#define INT_BUTTON        5// arduino pin 18, real int = int3
+  
 #define ALARM_1           1
 #define NUMBER_ROWS_SCREEN        (6)
 #define NUMBER_SHOW_PARAM         (9) 
@@ -26,8 +29,8 @@
 #define SCREEN_TIME_POS                 (7)
 #define SCREEN_ALARM_POS                (8)
 #define LCD_NUM_SYMBOL_IN_ROW			(14)
-#define SCREEN_DATE_DAY_POS             (LCD_NUMBER_PIXELS_WIDE_SYMBOL * 6)
-#define SCREEN_DATE_MONTH_POS           (LCD_NUMBER_PIXELS_WIDE_SYMBOL * 9)
+#define SCREEN_DATE_DAY_POS             ((LCD_NUMBER_PIXELS_WIDE_SYMBOL * 7)-1)
+#define SCREEN_DATE_MONTH_POS           ((LCD_NUMBER_PIXELS_WIDE_SYMBOL * 11)-1)
 #define SCREEN_DATE_YEAR_POS            (LCD_NUMBER_PIXELS_WIDE_SYMBOL * 12)
        
 typedef enum MENU_SCREEN_enum

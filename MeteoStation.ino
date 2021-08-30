@@ -21,7 +21,7 @@ writing to 2 SDcard
 #include <SparkFun_LPS25HB_Arduino_Library.h>
 #include <SD.h> //sd карта
 #include <SPI.h> //sd карта
-#include <GyverPower.h> //sleep and wake up
+#include <avr/sleep.h>
 #include "buildTime.h" // для парсинга строки даты и времени, полученной при компиляции
 #include <Nokia_LCD.h> //nokia 5110 display
 #include "Init.h"
@@ -91,14 +91,18 @@ void setup()
     lcd.setBacklight(false);
     lcd.setCursor(0,5);
     lcd.setInverted(true);
-    lcd.print("Hello world!");
+	lcd.print("  ");
+		
+    lcd.print("Hello ");
+	lcd.print("world!");
     lcd.setInverted(false);
-    lcd.println("\nI am here.");
-    
+    //lcd.println("\nI am here.");
+    lcd.print("\nI am here.", 1, 2);
+	
     pinMode(PIN_INT1, INPUT);// пин для внешнего прерывания от RTC
-    power.setSleepMode(POWERDOWN_SLEEP);// настройка сна IDLE_SLEEP - 
-
     pinMode(PIN_INT2, INPUT);// пин для внешнего прерывания от button
+    set_sleep_mode(SLEEP_MODE_PWR_DOWN); // настройка режима сна
+    
     
     sensors.begin();
     
@@ -116,53 +120,57 @@ void setup()
     rtc.setA1Time(0,0,0,10,0x0e, false, false, false);//setA1Time(byte A1Day, byte A1Hour, byte A1Minute, byte A1Second, byte AlarmBits, bool A1Dy, bool A1h12, bool A1PM)
     rtc.turnOnAlarm(1);
 
-    attachInterrupt(0,buttonPressed,FALLING); 
-
-  
+	menuDate.date.day = 1;
+	menuDate.date.month = 1;
+	menuDate.date.year = 1;
+    
+    attachInterrupt(INT_ALARM,, isrAlarm, FALLING);  // прерывание от RTC
+    attachInterrupt(INT_BUTTON,isrButtonPressed,FALLING); // прерывание от button
     
 }
 
 void loop()
 {
-	if (true == pressAnyButton)
-	{
-		ReadSensors();
-		LCDShow();
-		pressAnyButton = false;
-		timeOld = timeCurrent;
+  if (true == pressAnyButton)
+  {
+    ReadSensors();
+    LCDShow();
+    pressAnyButton = false;
+    timeOld = timeCurrent;
         timeDelay = millis();
         timeDelayOld = timeDelay;
-	}
+  }
   
-	if (true == alarmTime)
-	{
-		ReadSensors();
-		write2sd();
+  if (true == alarmTime)
+  {
+    ReadSensors();
+    write2sd();
         alarmTime = false;
-	}
-	
+  }
   
-	if (0)//((timeCurrent.unixtime() - timeOld.unixtime())>5)
-	{
-		rtc.checkIfAlarm(ALARM_1);// сбрасываем флаг ALARM_1
-		attachInterrupt(1, isr, FALLING);  // подключаем прерывание на пин D3 (Arduino NANO)
-		lcd.clear();
-		lcd.setCursor(0,2);
-		lcd.print("Sleep");
-		power.sleepDelay(0xffffffff);  // спим очень долго просыпаемся по прерыванию
-		lcd.clear(); 
-		lcd.print("Wakeup");
-	}
-	else
-	{
+  
+  if (0)//((timeCurrent.unixtime() - timeOld.unixtime())>5)
+  {
+    rtc.checkIfAlarm(ALARM_1);// сбрасываем флаг ALARM_1
+    attachInterrupt(INT_ALARM,isr,FALLING);  // прерывание от RTC
+    attachInterrupt(INT_BUTTON,buttonPressed,FALLING); // прерывание от button
+    lcd.clear();
+    lcd.setCursor(0,2);
+    lcd.print("Sleep");
+    sleep_mode(); // Переводим МК в сон
+    lcd.clear(); 
+    lcd.print("Wakeup");
+  }
+  else
+  {
         // читаем время RTC раз в секунду
-		timeDelay = millis();
-		if ((timeDelay - timeDelayOld)>1000)
+    timeDelay = millis();
+    if ((timeDelay - timeDelayOld)>1000)
         {
             timeCurrent = RTClib::now();  // чтение текущего времени
             timeDelayOld = timeDelay;
         }  
-	}
+  }
     
 
 }
@@ -170,12 +178,10 @@ void loop()
 
 
 /********************************обработчик аппаратного прерывания********************/ 
-void isr() {
-  // дёргаем за функцию "проснуться"
-  // без неё проснёмся чуть позже (через 0-8 секунд)
-  power.wakeUp();
-  //Serial.println("\r\nISR");
-  detachInterrupt(1);
+void isrAlarm() 
+{   
+  
+  //Serial.println("\r\nisr RTC");
   alarmTime = true;  
 }
 
@@ -185,9 +191,9 @@ void isr() {
 
 
 /********************************обработчик прерывания по кнопке********************/ 
-void buttonPressed()          
+void isrButtonPressed()          
 {   
- power.wakeUp();
+ //Serial.println("\r\nisr Button");
  ADCSRA |= (1 << ADEN);
  buttonNum = whbuttonPressed();
  if (0 != buttonNum)

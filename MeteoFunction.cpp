@@ -8,7 +8,7 @@
 #include <SparkFun_LPS25HB_Arduino_Library.h>
 #include <SD.h> //sd карта
 #include <SPI.h> //sd карта
-#include <GyverPower.h> //sleep and wake up
+#include <avr/sleep.h>
 #include "buildTime.h" // для парсинга строки даты и времени, полученной при компиляции
 #include <Nokia_LCD.h> //nokia 5110 display
 #include "Init.h"
@@ -238,7 +238,8 @@ void write2sd(void)
                 else if (SCREEN_TIME_POS == cursorPos) 
                 {
                     menuLCD = TIME_MENU;
-                    ;                
+					menuTime.state = HOUR;
+					printCurrentMenuOnLCD(menuLCD);             
                 }
                 else if (SCREEN_ALARM_POS == cursorPos)
                 {
@@ -254,21 +255,21 @@ void write2sd(void)
         {
             if (DAY == menuDate.state)
             {
-                if (menuDate.date.day != 1)
+                if (menuDate.date.day > 1)
                 {
                     menuDate.date.day--;
                 }            
             }
             else if (MONTH == menuDate.state)
             {
-                if (menuDate.date.month != 1)
+                if (menuDate.date.month > 1)
                 {
                     menuDate.date.month--;
                 }
             }
             else if (YEAR == menuDate.state)
             {
-                if (menuDate.date.year != 0)
+                if (menuDate.date.year > 0)
                 {
                     menuDate.date.year--;
                 }
@@ -278,26 +279,14 @@ void write2sd(void)
         {
             if (DAY == menuDate.state)
             {
-                if(((menuDate.date.month == 1) || (menuDate.date.month == 3) || (menuDate.date.month == 5) || (menuDate.date.month == 7)\
-                    || (menuDate.date.month == 8) || (menuDate.date.month == 10) || (menuDate.date.month == 12)) && (menuDate.date.day != 31))
-                {
-                    menuDate.date.day++; 
-                }
-                else if (((menuDate.date.month == 4) || (menuDate.date.month == 6) || (menuDate.date.month == 9) || (menuDate.date.month == 11))
-                    && (menuDate.date.day != 30))
-                {
-                    menuDate.date.day++;
-                }
-                else if ((menuDate.date.month == 2) && (menuDate.date.day != 28))
-                {
-                    menuDate.date.day++;
-                }                    
+				menuDate.date.day++;				
             }
             else if (MONTH == menuDate.state)
             {
                 if (menuDate.date.month != 12)
                 {
                     menuDate.date.month++;
+					
                 }
             }
             else if (YEAR == menuDate.state)
@@ -344,6 +333,23 @@ void write2sd(void)
             timeCurrent = RTClib::now();  // чтение текущего времени
             menuLCD = MAIN_MENU;
         }
+		
+		if(((menuDate.date.month == 1) || (menuDate.date.month == 3) || (menuDate.date.month == 5) || (menuDate.date.month == 7)\
+			|| (menuDate.date.month == 8) || (menuDate.date.month == 10) || (menuDate.date.month == 12)) && (menuDate.date.day > 31))
+		{
+			menuDate.date.day = 31; 
+		}
+		else if(((menuDate.date.month == 4) || (menuDate.date.month == 6) || (menuDate.date.month == 9) || (menuDate.date.month == 11))
+                    && (menuDate.date.day > 30))
+		{
+			menuDate.date.day = 30;
+		}
+		else if ((menuDate.date.month == 2) && (menuDate.date.day > 28))
+		{
+			menuDate.date.day = 28;
+		}
+		
+		
         printCurrentMenuOnLCD(menuLCD);
     }
 /*------------------------------ TIME menu ----------------------------*/
@@ -355,7 +361,7 @@ void write2sd(void)
             {
                 if (menuTime.time.hour == 0)
                 {
-                    menuTime.time.hour == 23;
+                    menuTime.time.hour = 23;
                 }
                 else
                 {
@@ -391,7 +397,7 @@ void write2sd(void)
             {
                 if (menuTime.time.hour == 23)
                 {
-                    menuTime.time.hour == 0;
+                    menuTime.time.hour = 0;
                 }
                 else
                 {
@@ -483,20 +489,21 @@ void makeStringsForLCD(DATE *date, TIME *time, ALARM *alarm)
 {
     char str_temp[10];
 	dtostrf(t1, 3, 1, str_temp);
-	snprintf(screenValue[0],LCD_NUM_SYMBOL_IN_ROW,"t1     %s C",str_temp);
+	snprintf(screenValue[0],LCD_NUM_SYMBOL_IN_ROW,"t1      %s C",str_temp);
 	dtostrf(t2, 3, 1, str_temp);
-	snprintf(screenValue[1],LCD_NUM_SYMBOL_IN_ROW,"t2     %s C",str_temp);
+	snprintf(screenValue[1],LCD_NUM_SYMBOL_IN_ROW,"t2      %s C",str_temp);
 	dtostrf(t3, 3, 1, str_temp);
-	snprintf(screenValue[2],LCD_NUM_SYMBOL_IN_ROW,"t3     %s C",str_temp);
+	snprintf(screenValue[2],LCD_NUM_SYMBOL_IN_ROW,"t3      %s C",str_temp);
 	dtostrf(humidity, 3, 1, str_temp);
-	snprintf(screenValue[3],LCD_NUM_SYMBOL_IN_ROW,"Hum   %s %%",str_temp);
+	snprintf(screenValue[3],LCD_NUM_SYMBOL_IN_ROW,"Hum     %s %%",str_temp);
 	dtostrf(pressurePascals, 6, 1, str_temp);
-	snprintf(screenValue[4],LCD_NUM_SYMBOL_IN_ROW,"P  %s Pa",str_temp);
+	snprintf(screenValue[4],LCD_NUM_SYMBOL_IN_ROW,"P  %s hPa",str_temp);
     dtostrf(Vbat, 4, 2, str_temp);
     snprintf(screenValue[5],LCD_NUM_SYMBOL_IN_ROW,"Vbat   %s V",str_temp);
-	snprintf(screenValue[6],LCD_NUM_SYMBOL_IN_ROW,"Date  %d.%d.%d",date->day,date->month,date->year);
-	snprintf(screenValue[7],LCD_NUM_SYMBOL_IN_ROW,"Time  %d:%d:%d",time->hour,time->minute,time->second);
+	snprintf(screenValue[6],LCD_NUM_SYMBOL_IN_ROW,"Date %2d.%2d.%2d",date->day,date->month,date->year);
+	snprintf(screenValue[7],LCD_NUM_SYMBOL_IN_ROW,"Time %2d:%2d:%2d",time->hour,time->minute,time->second);
 	snprintf(screenValue[8],LCD_NUM_SYMBOL_IN_ROW,"AL %d:%d:%d:%d",alarm->ADay,alarm->AHour,alarm->AMinute,alarm->ASecond);
+	
 }// end of makeStringsForLCD()
 
 
@@ -620,7 +627,14 @@ void printCurrentMenuOnLCD(MENU_SCREEN menuLCD)
     
     if ( MAIN_MENU == menuLCD )
     { 
-        date.day = timeCurrent.day();
+        menuDate.date.day = timeCurrent.day();
+        menuDate.date.month = timeCurrent.month();
+        menuDate.date.year = timeCurrent.year();
+		menuTime.time.hour = timeCurrent.hour();
+        menuTime.time.minute = timeCurrent.minute();
+        menuTime.time.second = timeCurrent.second();
+		
+		date.day = timeCurrent.day();
         date.month = timeCurrent.month();
         date.year = timeCurrent.year();
         time.hour = timeCurrent.hour();
@@ -661,32 +675,66 @@ void printCurrentMenuOnLCD(MENU_SCREEN menuLCD)
         for (byte i=0;i< NUMBER_ROWS_SCREEN;i++)
         {
             lcd.setCursor(0,i);
-            lcd.print(screenValue[firstRowPos + i]);  
+            if (i == (SCREEN_DATE_POS-firstRowPos))
+			{
+				if ( DAY == menuDate.state )
+				{
+					lcd.print(screenValue[firstRowPos + i], 5, 2);
+				}
+				else if ( MONTH == menuDate.state )
+				{
+					lcd.print(screenValue[firstRowPos + i], 8, 2);
+				}
+				else if ( YEAR == menuDate.state )
+				{
+					lcd.print(screenValue[firstRowPos + i], 11, 2);
+				}
+				
+			}
+			else
+			{
+				lcd.print(screenValue[firstRowPos + i]); 
+			}
+				
         }
-        uint8_t temp = 0;
-        if ( DAY == menuDate.state )
-        {
-            lcd.setCursor(SCREEN_DATE_DAY_POS,(cursorPos-firstRowPos));
-            temp = date.day;
-        }
-        else if ( MONTH == menuDate.state )
-        {
-            lcd.setCursor(SCREEN_DATE_MONTH_POS,(cursorPos-firstRowPos));
-            temp = date.month;            
-        }
-        else if ( YEAR == menuDate.state )
-        {
-            lcd.setCursor(SCREEN_DATE_YEAR_POS,(cursorPos-firstRowPos));
-            temp = date.year;        
-        }        
-        lcd.print("  ");
-        lcd.setInverted(true);
-        lcd.print(temp);
-        lcd.setInverted(false);        
     }
     else if ( TIME_MENU == menuLCD )
     {
-
+		date.day = timeCurrent.day();
+        date.month = timeCurrent.month();
+        date.year = timeCurrent.year();
+        time.hour = menuTime.time.hour;
+        time.minute = menuTime.time.minute;
+        time.second = menuTime.time.second;
+        rtc.getA1Time(alarm.ADay, alarm.AHour, alarm.AMinute, alarm.ASecond,\
+                  alarm.AlarmBits, alarm.ADy, alarm.Ah12, alarm.APM); 
+        makeStringsForLCD(&date,&time,&alarm);
+		
+		lcd.clear();
+        for (byte i=0;i< NUMBER_ROWS_SCREEN;i++)
+        {
+            lcd.setCursor(0,i);
+            if (i == (SCREEN_TIME_POS-firstRowPos))
+			{
+				if ( HOUR == menuTime.state )
+				{
+					lcd.print(screenValue[firstRowPos + i], 5, 2);
+				}
+				else if ( MINUTE == menuTime.state )
+				{
+					lcd.print(screenValue[firstRowPos + i], 8, 2);
+				}
+				else if ( SECOND == menuTime.state )
+				{
+					lcd.print(screenValue[firstRowPos + i], 11, 2);
+				}
+				
+			}
+			else
+			{
+				lcd.print(screenValue[firstRowPos + i]); 
+			}	
+        }
     }
     else if ( ALARM_MENU == menuLCD )
     {
