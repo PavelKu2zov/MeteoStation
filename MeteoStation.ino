@@ -10,6 +10,7 @@
 #include <avr/sleep.h>
 #include "buildTime.h" // для парсинга строки даты и времени, полученной при компиляции
 #include <Nokia_LCD.h> //nokia 5110 display
+#include "ModuleRAK811.h"
 #include "Init.h"
 /********************************************************************/
 
@@ -112,6 +113,14 @@ void setup()
     
     attachInterrupt(INT_ALARM, isrAlarm, FALLING);  // прерывание от RTC
     attachInterrupt(INT_BUTTON,isrButtonPressed,FALLING); // прерывание от button
+
+    RAK811_init();
+    RAK811_sendMessage(RAK811_confMode);
+    delay(200);
+    RAK811_sendMessage(RAK811_confPrm);
+    delay(200);
+    RAK811_sendMessage(RAK811_taransferMode);
+    delay(200);
     
 }
 
@@ -180,6 +189,9 @@ void isrAlarm()
 void isrButtonPressed()          
 {   
  Serial.println("\r\nisr Button");
+
+ RAK811_sendMessage(RAK811_FirstPartStrToSend);
+ 
  ADCSRA |= (1 << ADEN);
  buttonNum = whbuttonPressed();
  if (0 != buttonNum)
