@@ -521,11 +521,9 @@ void makeStringsForLCD(DATE *date, TIME *time, ALARM *alarm)
 //**************************************************************************************************
 void ReadSensors(void)
 {
-    timeCurrent = RTClib::now();  // чтение текущего времени
+  timeCurrent = RTClib::now();  // чтение текущего времени
 	pressurePascals = barometer.getPressure_hPa();
 	humidity = humudity_sensor.readHumidity();
-
-	sensors.requestTemperatures();   // Send command to all the sensors for temperature conversion
 
 	// если датчик t1 подсоединен считываем температуру
 	if (true == sensors.requestTemperaturesByAddress(t1_deviceAddress))
