@@ -10,7 +10,7 @@
 #include <avr/sleep.h>
 #include "buildTime.h" // для парсинга строки даты и времени, полученной при компиляции
 #include <Nokia_LCD.h> //nokia 5110 display
-#include "ModuleRAK811.h"
+//#include "ModuleRAK811.h"
 #include "Init.h"
 /********************************************************************/
 
@@ -19,7 +19,7 @@ DATE_MENU_SCREEN menuDate;
 TIME_MENU_SCREEN menuTime;
 
 
-bool alarmTime = false; 
+bool alarmTime = false;
 byte buttonNum = 0;     // какая кнопка нажата
 bool pressAnyButton = false; // была ли нажата кнопка любая
 char screenValue[NUMBER_SHOW_PARAM][LCD_NUM_SYMBOL_IN_ROW];
@@ -37,11 +37,11 @@ const DeviceAddress t2_deviceAddress = { 0x28, 0x4b,0xeb, 0x07, 0xb6, 0x01, 0x3c
 const DeviceAddress t3_deviceAddress = { 0x28, 0x48,0xdf, 0x07, 0xb6, 0x01, 0x3c, 0xc9 };
 
 //button addresses analogread()
-const int buttonDOWN = 372; //shitty 
-const int buttonEnter = 420;   
-const int buttonLeft = 520;    
+const int buttonDOWN = 372; //shitty
+const int buttonEnter = 420;
+const int buttonLeft = 520;
 const int buttonUP = 630;    //also shitty sometimes
-const int buttonRight = 850;    
+const int buttonRight = 850;
 
 float pressurePascals = 0;// Создаём переменную для значения атмосферного давления в Паскалях
 float humidity = 0;// переменная показания влажности
@@ -50,7 +50,7 @@ float t2 = 0; //температура второго датчика
 float t3 = 0; //температура третьего датчика
 float Vbat = 0; // напряжение батареи
 DateTime timeCurrent; // текущее время
-DateTime timeOld; 
+DateTime timeOld;
 
 DS3231  rtc;
 File myFile;
@@ -61,14 +61,14 @@ LPS25HB barometer;
 Nokia_LCD lcd(PIN_CLK_LCD /* CLK */, PIN_CLK_DIN /* DIN */, PIN_CLK_DC /* DC */, PIN_CLK_CE /* CE */, PIN_CLK_RST /* RST */); //nokia lcd pins
 
 
-     
+
 void setup()
 {
   //#ifdef DEBUG
     Serial.begin(9600); // открываем последовательный порт для мониторинга действий в программе
-  //#endif  
+  //#endif
     Wire.begin();// Start the I2C interface
-    
+
     lcd.begin(); //initialize screen
     lcd.setBacklight(true);
     lcd.setContrast(60);
@@ -79,27 +79,27 @@ void setup()
     lcd.setCursor(0,5);
     lcd.setInverted(true);
 	lcd.print("  ");
-		
+
     lcd.print("Hello ");
 	lcd.print("world!");
     lcd.setInverted(false);
     //lcd.println("\nI am here.");
     lcd.print("\nI am here.", 1, 2);
-	
+
     pinMode(PIN_INT_ALARM, INPUT);// пин для внешнего прерывания от RTC
     pinMode(PIN_INT_BUTTON, INPUT);// пин для внешнего прерывания от button
     set_sleep_mode(SLEEP_MODE_PWR_DOWN); // настройка режима сна
-    
-    
+
+
     sensors.begin();
-    
+
     barometer.begin(Wire, LPS25HB_I2C_ADDR_ALT);
-    
+
     humudity_sensor.begin();
-    
+
     rtc.setSecond(BUILD_SEC);    // устанавливаем секунд
     rtc.setMinute(BUILD_MIN);    // установка минут
-    rtc.setHour(BUILD_HOUR);     //установка часов  
+    rtc.setHour(BUILD_HOUR);     //установка часов
     rtc.setDate(BUILD_DAY);     // устанавливаем число
     rtc.setMonth(BUILD_MONTH);   // Устанавливаем месяц
     rtc.setYear(BUILD_YEAR);    // Устанавливаем год
@@ -110,24 +110,24 @@ void setup()
 	menuDate.date.day = 1;
 	menuDate.date.month = 1;
 	menuDate.date.year = 1;
-    
+
     attachInterrupt(INT_ALARM, isrAlarm, FALLING);  // прерывание от RTC
     attachInterrupt(INT_BUTTON,isrButtonPressed,FALLING); // прерывание от button
 
-    RAK811_init();
-    RAK811_sendMessage(RAK811_confMode);
-    delay(200);
-    RAK811_sendMessage(RAK811_confPrm);
-    delay(200);
-    RAK811_sendMessage(RAK811_taransferMode);
-    delay(200);
-    
+//    RAK811_init();
+  //  RAK811_sendMessage(RAK811_confMode);
+    //delay(200);
+    //RAK811_sendMessage(RAK811_confPrm);
+    //delay(200);
+    //RAK811_sendMessage(RAK811_taransferMode);
+   // delay(200);
+
 }
 
 void loop()
 {
   if (true == pressAnyButton)
-  {
+  {Serial.println("\r\npressAnyButton");
     ReadSensors();
     LCDShow();
     pressAnyButton = false;
@@ -135,16 +135,16 @@ void loop()
         timeDelay = millis();
         timeDelayOld = timeDelay;
   }
-  
+
   if (true == alarmTime)
   {
     ReadSensors();
     write2sd();
         alarmTime = false;
   }
-  
-  
-  if (0)//((timeCurrent.unixtime() - timeOld.unixtime())>5)
+
+
+  if ((timeCurrent.unixtime() - timeOld.unixtime())>5)
   {
     rtc.checkIfAlarm(ALARM_1);// сбрасываем флаг ALARM_1
     attachInterrupt(INT_ALARM,isrAlarm,FALLING);  // прерывание от RTC
@@ -153,7 +153,7 @@ void loop()
     lcd.setCursor(0,2);
     lcd.print("Sleep");
     sleep_mode(); // Переводим МК в сон
-    lcd.clear(); 
+    lcd.clear();
     lcd.print("Wakeup");
   }
   else
@@ -164,20 +164,20 @@ void loop()
         {
             timeCurrent = RTClib::now();  // чтение текущего времени
             timeDelayOld = timeDelay;
-        }  
+        }
   }
-    
+
 
 }
 
 
 
-/********************************обработчик аппаратного прерывания********************/ 
-void isrAlarm() 
-{   
-  
-  //Serial.println("\r\nisr RTC");
-  alarmTime = true;  
+/********************************обработчик аппаратного прерывания********************/
+void isrAlarm()
+{
+
+  Serial.println("\r\nisr RTC");
+  alarmTime = true;
 }
 
 
@@ -185,13 +185,13 @@ void isrAlarm()
 
 
 
-/********************************обработчик прерывания по кнопке********************/ 
-void isrButtonPressed()          
-{   
+/********************************обработчик прерывания по кнопке********************/
+void isrButtonPressed()
+{
  Serial.println("\r\nisr Button");
 
- RAK811_sendMessage(RAK811_FirstPartStrToSend);
- 
+ //RAK811_sendMessage(RAK811_FirstPartStrToSend);
+
  ADCSRA |= (1 << ADEN);
  buttonNum = whbuttonPressed();
  if (0 != buttonNum)
@@ -202,5 +202,5 @@ void isrButtonPressed()
  {
   ;
  }
- 
+
 }
