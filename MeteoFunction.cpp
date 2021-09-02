@@ -12,6 +12,8 @@
 #include "buildTime.h" // для парсинга строки даты и времени, полученной при компиляции
 #include <Nokia_LCD.h> //nokia 5110 display
 #include "Init.h"
+#include <math.h>				 
+#include <TimeLib.h>					  
 
 
 //**************************************************************************************************
@@ -75,6 +77,11 @@ int whbuttonPressed(void)
 //**************************************************************************************************
 void write2sd(void)
 {
+	static int reg = 0;
+    static int count = 1;
+    static int lt_day=0;
+    static String stringOne("datalog1.txt");
+    int currentUnixTime;				   
       
     #ifdef DEBUG
     Serial.print("Initializing SD card #1...");
@@ -85,7 +92,15 @@ void write2sd(void)
           Serial.println("initialization done.");
         #endif
       
-        myFile = SD.open("temp4.txt", FILE_WRITE);
+        if ((reg==10) || ((currentUnixTime-lt_day)>(60*60*24))){
+          stringOne = "datalog"+String(count)+".txt"; //or .csv?
+          count=count+1;
+          reg = 0;
+          lt_day = timeCurrent.unixtime();
+        }
+        reg=reg+1;
+
+        myFile = SD.open(stringOne, FILE_WRITE);
         if (myFile)
         {    
           myFile.print(t1);
@@ -137,7 +152,7 @@ void write2sd(void)
           Serial.println("initialization done.");
         #endif
       
-        myFile = SD.open("temp4.txt", FILE_WRITE);
+         myFile = SD.open("stringOne.txt", FILE_WRITE);
         if (myFile)
         {  
           myFile.print(t1);
@@ -229,6 +244,7 @@ void write2sd(void)
             }
         else if (BUTTON_SELECT == buttonNum)// select
             {
+				lcd.setInverted(false);// чтобы убрать инверсию если строка последняя																										   
                 if (SCREEN_DATE_POS == cursorPos) 
                 {
                     menuLCD = DATE_MENU;
@@ -244,7 +260,8 @@ void write2sd(void)
                 else if (SCREEN_ALARM_POS == cursorPos)
                 {
                     menuLCD = ALARM_MENU;
-                    ;        
+                     //menuAlarm.state = SCALE; - commented because it was same in pasha's file
+                    //printCurrentMenuOnLCD(menuLCD);       
                 }
             }
     }
@@ -255,21 +272,21 @@ void write2sd(void)
         {
             if (DAY == menuDate.state)
             {
-                if (menuDate.date.day > 1)
+                if (menuDate.date.day != 1)
                 {
                     menuDate.date.day--;
                 }            
             }
             else if (MONTH == menuDate.state)
             {
-                if (menuDate.date.month > 1)
+                if (menuDate.date.month != 1)
                 {
                     menuDate.date.month--;
                 }
             }
             else if (YEAR == menuDate.state)
             {
-                if (menuDate.date.year > 0)
+                if (menuDate.date.year != 0)
                 {
                     menuDate.date.year--;
                 }
@@ -468,7 +485,110 @@ void write2sd(void)
     /*--------------------------- ALARM menu ------------------------*/
     else if (ALARM_MENU == menuLCD)
     {
-      
+	if (BUTTON_DOWN == buttonNum)// down
+      {
+          if (SCALE == menuAlarm.state)
+          {
+            if (menuAlarm.alarm.scale == SEC)
+            {
+              menuAlarm.alarm.scale = MIN; 
+              menuAlarm.alarm.period = 10;
+            }
+            else if (menuAlarm.alarm.scale == MIN)
+                {
+                  menuAlarm.alarm.scale = HOURS;
+                  menuAlarm.alarm.period = 1;
+                } 
+                else 
+                {
+                  menuAlarm.alarm.scale = HOURS;
+                }
+          }
+          else if (PERIOD == menuAlarm.state)
+          {
+              if ((menuAlarm.alarm.scale == MIN) || (menuAlarm.alarm.scale == SEC))
+              {
+                if (menuAlarm.alarm.period > 10)
+                {
+                  menuAlarm.alarm.period--;
+                }
+                else {menuAlarm.alarm.period=10;}
+
+              }
+              else if (menuAlarm.alarm.period > 1)
+                  {menuAlarm.alarm.period--;}
+                  else {menuAlarm.alarm.period = 1;}
+          }
+      }
+      else if (BUTTON_UP == buttonNum)// up
+      {
+          if (SCALE == menuAlarm.state)
+          {
+            if (menuAlarm.alarm.scale == HOURS)
+            {
+              menuAlarm.alarm.scale = MIN; 
+              menuAlarm.alarm.period = 10;
+            }
+            else if (menuAlarm.alarm.scale == MIN)
+            {
+              menuAlarm.alarm.scale = SEC;
+              menuAlarm.alarm.period = 10;
+            } else {menuAlarm.alarm.scale = SEC;}
+          }
+          else if (PERIOD == menuAlarm.state)
+          {
+              if ((menuAlarm.alarm.scale == SEC || menuAlarm.alarm.scale == MIN))
+              {
+                if (menuAlarm.alarm.period<60)
+                {
+                  menuAlarm.alarm.period++;
+                }
+                else {menuAlarm.alarm.period = 10;}
+              }
+              else if (menuAlarm.alarm.period<4)
+                  {
+                    menuAlarm.alarm.period++;
+                  }
+                  else {menuAlarm.alarm.period = 4;}
+         
+          }									  
+  }
+      else if (BUTTON_LEFT == buttonNum)// left
+      {
+          if (SCALE == menuAlarm.state)
+          {
+             ;
+          }
+          else if (PERIOD == menuAlarm.state)
+          {
+              menuAlarm.state = SCALE;
+          }
+      }
+      else if (BUTTON_RIGHT == buttonNum)// right
+      {
+          if (SCALE == menuAlarm.state)
+          {
+              menuAlarm.state = PERIOD;
+          }
+          else if (PERIOD == menuAlarm.state)
+          {
+             ;
+          }
+      }
+      else if (BUTTON_SELECT == buttonNum)// select
+      {
+         Serial.println("test");
+         Serial.print("state in func lcd show menu alarm button select ");
+         Serial.println(menuAlarm.state);
+         Serial.print("period in func lcd show menu alram button select ");
+         Serial.println(menuAlarm.alarm.period);
+         Serial.print("period from alarm.period in func lacd show menu alarm buton selct");
+         Serial.println(menuAlarm.alarm.scale);
+        // Serial.println(alarm.period);
+         SetAlarm(menuAlarm.alarm.scale, menuAlarm.alarm.period);
+         menuLCD = MAIN_MENU;
+      }
+      printCurrentMenuOnLCD(menuLCD);    
     }
 }//end of LCDShow()
 
@@ -483,11 +603,12 @@ void write2sd(void)
 //--------------------------------------------------------------------------------------------------
 // @ReturnValue   None.
 //--------------------------------------------------------------------------------------------------
-// @Parameters   date,time,alarm -> parameters, which need show
+// @Parameters   date,time,alarm -> parameters, which we need to show
 //**************************************************************************************************
 void makeStringsForLCD(DATE *date, TIME *time, ALARM *alarm)
 {
     char str_temp[10];
+	char str_scale[6];				  
 	dtostrf(t1, 3, 1, str_temp);
 	snprintf(screenValue[0],LCD_NUM_SYMBOL_IN_ROW,"t1      %s C",str_temp);
 	dtostrf(t2, 3, 1, str_temp);
@@ -497,16 +618,22 @@ void makeStringsForLCD(DATE *date, TIME *time, ALARM *alarm)
 	dtostrf(humidity, 3, 1, str_temp);
 	snprintf(screenValue[3],LCD_NUM_SYMBOL_IN_ROW,"Hum     %s %%",str_temp);
 	dtostrf(pressurePascals, 6, 1, str_temp);
-	snprintf(screenValue[4],LCD_NUM_SYMBOL_IN_ROW,"P  %s hPa",str_temp);
-    dtostrf(Vbat, 4, 2, str_temp);
+	snprintf(screenValue[4],LCD_NUM_SYMBOL_IN_ROW,"P  %s Pa",str_temp);
+  dtostrf(vbat, 4, 2, str_temp);
     snprintf(screenValue[5],LCD_NUM_SYMBOL_IN_ROW,"Vbat   %s V",str_temp);
-	snprintf(screenValue[6],LCD_NUM_SYMBOL_IN_ROW,"Date %2d.%2d.%2d",date->day,date->month,date->year);
-	snprintf(screenValue[7],LCD_NUM_SYMBOL_IN_ROW,"Time %2d:%2d:%2d",time->hour,time->minute,time->second);
-	snprintf(screenValue[8],LCD_NUM_SYMBOL_IN_ROW,"AL %d:%d:%d:%d",alarm->ADay,alarm->AHour,alarm->AMinute,alarm->ASecond);
-	
+	snprintf(screenValue[6],LCD_NUM_SYMBOL_IN_ROW,"Date  %d.%d.%d",date->day,date->month,date->year);
+	snprintf(screenValue[7],LCD_NUM_SYMBOL_IN_ROW,"Time  %d:%d:%d",time->hour,time->minute,time->second);
+	if (alarm->scale == HOURS) 
+  {
+    snprintf(screenValue[8],LCD_NUM_SYMBOL_IN_ROW,"Freq HOURS %d",alarm->period);
+  }
+  else if (alarm->scale == MIN)
+  {
+    snprintf(screenValue[8],LCD_NUM_SYMBOL_IN_ROW,"Freq MIN   %d",alarm->period);
+  }
+  else {snprintf(screenValue[8],LCD_NUM_SYMBOL_IN_ROW,"Freq SEC   %d",alarm->period);					 
 }// end of makeStringsForLCD()
-
-
+}
 
 //**************************************************************************************************
 // @Function      ReadSensors()
@@ -523,7 +650,10 @@ void ReadSensors(void)
 {
   timeCurrent = RTClib::now();  // чтение текущего времени
 	pressurePascals = barometer.getPressure_hPa();
-	humidity = humudity_sensor.readHumidity();
+	humidity = humidity_sensor.readHumidity();
+	vbat = ReadVbat();
+
+	sensors.requestTemperatures();   // Send command to all the sensors for temperature conversion				
 
 	// если датчик t1 подсоединен считываем температуру
 	if (true == sensors.requestTemperaturesByAddress(t1_deviceAddress))
@@ -587,11 +717,7 @@ void ReadSensors(void)
     Serial.print("Pressure_P: ");
     Serial.print(pressurePascals);
     Serial.println("Pa  ");     
-	
-    //Serial.print("Pressure_mmhg: ");
-    //Serial.print(pressureMillimetersHg);
-    //Serial.println("mmhg  ");     
-	
+	   
     Serial.print("Altitude: ");
     Serial.print(altitude);
     Serial.println("m  ");  
@@ -603,7 +729,6 @@ void ReadSensors(void)
     #endif
 
 }// end of ReadSensors()
-
 
 
 //**************************************************************************************************
@@ -638,8 +763,10 @@ void printCurrentMenuOnLCD(MENU_SCREEN menuLCD)
         time.hour = timeCurrent.hour();
         time.minute = timeCurrent.minute();
         time.second = timeCurrent.second();
-        rtc.getA1Time(alarm.ADay, alarm.AHour, alarm.AMinute, alarm.ASecond,\
-                  alarm.AlarmBits, alarm.ADy, alarm.Ah12, alarm.APM); 
+
+        alarm.scale = menuAlarm.alarm.scale;
+        alarm.period = menuAlarm.alarm.period;
+        
         makeStringsForLCD(&date,&time,&alarm);
         
         lcd.clear();
@@ -649,6 +776,8 @@ void printCurrentMenuOnLCD(MENU_SCREEN menuLCD)
            if (i == (cursorPos-firstRowPos)) 
            {
                 lcd.setInverted(true);	
+
+
            }
            else
            {
@@ -665,8 +794,10 @@ void printCurrentMenuOnLCD(MENU_SCREEN menuLCD)
         time.hour = timeCurrent.hour();
         time.minute = timeCurrent.minute();
         time.second = timeCurrent.second();
-        rtc.getA1Time(alarm.ADay, alarm.AHour, alarm.AMinute, alarm.ASecond,\
-                  alarm.AlarmBits, alarm.ADy, alarm.Ah12, alarm.APM); 
+
+        alarm.scale = menuAlarm.alarm.scale;
+        alarm.period = menuAlarm.alarm.period;
+		
         makeStringsForLCD(&date,&time,&alarm);
         
         lcd.clear();
@@ -678,6 +809,7 @@ void printCurrentMenuOnLCD(MENU_SCREEN menuLCD)
 				if ( DAY == menuDate.state )
 				{
 					lcd.print(screenValue[firstRowPos + i], 5, 2);
+
 				}
 				else if ( MONTH == menuDate.state )
 				{
@@ -704,8 +836,6 @@ void printCurrentMenuOnLCD(MENU_SCREEN menuLCD)
         time.hour = menuTime.time.hour;
         time.minute = menuTime.time.minute;
         time.second = menuTime.time.second;
-        rtc.getA1Time(alarm.ADay, alarm.AHour, alarm.AMinute, alarm.ASecond,\
-                  alarm.AlarmBits, alarm.ADy, alarm.Ah12, alarm.APM); 
         makeStringsForLCD(&date,&time,&alarm);
 		
 		lcd.clear();
@@ -736,10 +866,42 @@ void printCurrentMenuOnLCD(MENU_SCREEN menuLCD)
     }
     else if ( ALARM_MENU == menuLCD )
     {
+		date.day = timeCurrent.day();
+        date.month = timeCurrent.month();
+        date.year = timeCurrent.year();
+        time.hour = timeCurrent.hour();
+        time.minute = timeCurrent.minute();
+        time.second = timeCurrent.second();
+        alarm.scale = menuAlarm.alarm.scale;
+        alarm.period = menuAlarm.alarm.period;
+        makeStringsForLCD(&date,&time,&alarm);
+       
+    
+        lcd.clear();
+        for (byte i=0;i< NUMBER_ROWS_SCREEN;i++)
+        {
+            lcd.setCursor(0,i);
+            if (i == (SCREEN_ALARM_POS-firstRowPos))
+            {
+              
+              if ( SCALE == menuAlarm.state )
+              {
+                lcd.print(screenValue[firstRowPos + i], 5, 5);
+              }
+              else if ( PERIOD == menuAlarm.state )
+                  {
+                    lcd.print(screenValue[firstRowPos + i], 11, 2);
+                  }							 
         
     }
+	else
+            {
+              lcd.print(screenValue[firstRowPos + i]); 
+            } 
+        }
+    }			
         
-}// end of printCurrentMenuOnLCD()
+}
 
 
 
@@ -784,3 +946,92 @@ void SetTime(uint8_t  h, uint8_t  m, uint8_t s)
     rtc.setMinute(m);        // Устанавливаем минуты
     rtc.setHour(h);          // Устанавливаем часы    
 }// end of SetTime()
+
+//**************************************************************************************************
+// @Function      Voltage()
+//--------------------------------------------------------------------------------------------------
+// @Description   Measure voltage
+//--------------------------------------------------------------------------------------------------
+// @Notes         None.
+//--------------------------------------------------------------------------------------------------
+// @ReturnValue   voltage.
+//--------------------------------------------------------------------------------------------------
+// @Parameters    sum->sum of samples taken
+//                sample count->no samples
+//                r1=30kom
+//                r2=10kom
+//                calibration value = 6.24/6=1.029. measured 6 showed 6.24 on voltimeter         \
+//                NUM_SAMPLES = 10 NO measures
+//**************************************************************************************************
+float ReadVbat(void)
+{
+  float voltage;
+  float sum = 0;
+  unsigned char sample_count = 0; // current sample number
+
+      while (sample_count < NUM_SAMPLES) {
+          sum += analogRead(VBAT_PIN);
+          sample_count++;
+      }
+      // use 3.3 for a 3.3V ADC reference voltage
+      voltage = 1.029*(sum/NUM_SAMPLES)* (3.3/1024.0)/(r1/(r1+r2));
+      // send voltage for display o n Serial Monitor
+      // divides by 6.24/6 is the calibrated voltage divide
+
+      return voltage;
+
+      sample_count = 0;
+      sum = 0;
+}//end of ReadVbat
+
+//**************************************************************************************************
+// @Function      SetAlarm()
+//--------------------------------------------------------------------------------------------------
+// @Description   Set alarm
+//--------------------------------------------------------------------------------------------------
+// @Notes         None.
+//--------------------------------------------------------------------------------------------------
+// @ReturnValue   None.
+//--------------------------------------------------------------------------------------------------
+// @Parameters    s -> scale (hour/minute/second)
+//                p -> period (1-4 hours/ 1-60 minutes or seconds)
+//                t -> current time
+//**************************************************************************************************
+void SetAlarm(SCALE_enum  s, uint8_t  p)
+{
+    DateTime timeCurrent;
+    char buf[20];
+    timeCurrent = RTClib::now();
+    uint32_t nextTimeAlarm;
+    int al_days;
+    int al_hours;
+    int al_minutes;
+    int al_seconds;
+    uint32_t unix_time;
+
+    unix_time = timeCurrent.unixtime();
+
+    if (s == SEC) //seconds
+    {
+      nextTimeAlarm = unix_time + p;
+    }
+    else if (s == MIN)
+          {
+            nextTimeAlarm = unix_time + p*60;
+          }
+          else {nextTimeAlarm = unix_time+p*360;}
+
+    al_days = day(nextTimeAlarm);   
+    al_hours = hour(nextTimeAlarm);
+    al_minutes = minute(nextTimeAlarm);
+    al_seconds = second(nextTimeAlarm);
+
+
+    /*sprintf(buf, "%02d:%02d:%02d %02d/%02d/%02d",  timeCurrent.hour(), timeCurrent.minute(), timeCurrent.second(), timeCurrent.day(), timeCurrent.month(), timeCurrent.year()); 
+    Serial.println(buf);
+    Serial.println(timeCurrent.unixtime());
+    Serial.println(nextTimeAlarm);
+*/
+
+    rtc.setA1Time(al_days,al_hours,al_minutes,al_seconds,0x0e, false, false, false);//setA1Time(byte A1Day, byte A1Hour, byte A1Minute, byte A1Second, byte AlarmBits, bool A1Dy, bool A1h12, bool A1PM)
+}// end of SetAlarm()																									

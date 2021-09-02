@@ -4,7 +4,7 @@
 #include <DHT.h> // библиотека для работы с датчиками DHT11, DHT21, DHT22
 #include <DS3231.h> //часы
 #include <Wire.h>
-#include <SparkFun_LPS25HB_Arduino_Library.h>
+#include <SparkFun_LPS25HB_Arduino_Library.h>//barometer
 #include <SD.h> //sd карта
 #include <SPI.h> //sd карта
 #include <avr/sleep.h>
@@ -12,12 +12,14 @@
 #include <Nokia_LCD.h> //nokia 5110 display
 //#include "ModuleRAK811.h"
 #include "Init.h"
-/********************************************************************/
+#include <math.h>
+#include <TimeLib.h>
+/********************************************************************/				
 
 
 DATE_MENU_SCREEN menuDate;
 TIME_MENU_SCREEN menuTime;
-
+ALARM_MENU_SCREEN menuAlarm;
 
 bool alarmTime = false;
 byte buttonNum = 0;     // какая кнопка нажата
@@ -27,6 +29,9 @@ uint8_t firstRowPos = 0;
 uint8_t cursorPos = 0;
 int timeDelay = 0;
 int timeDelayOld = 0;
+float r1 = 11;
+float r2 = 30;
+float vbat = 0.0;            // calculated voltage			  
 
 
 //#define DEBUG 1 //debug switch between printing and sd card
@@ -65,7 +70,7 @@ DS3231  rtc;
 File myFile;
 OneWire oneWire(ONE_WIRE_BUS); //вход датчика DS18B20
 DallasTemperature sensors(&oneWire);
-DHT humudity_sensor(PIN_AM2305, DHT22); //датчик влажности am2305
+DHT humidity_sensor(PIN_AM2305, DHT22); //датчик влажности am2305
 LPS25HB barometer;
 Nokia_LCD lcd(PIN_CLK_LCD /* CLK */, PIN_CLK_DIN /* DIN */, PIN_CLK_DC /* DC */, PIN_CLK_CE /* CE */, PIN_CLK_RST /* RST */); //nokia lcd pins
 
@@ -104,7 +109,7 @@ void setup()
 
     barometer.begin(Wire, LPS25HB_I2C_ADDR_ALT);
 
-    humudity_sensor.begin();
+    humidity_sensor.begin();
 
     rtc.setSecond(BUILD_SEC);    // устанавливаем секунд
     rtc.setMinute(BUILD_MIN);    // установка минут
@@ -113,6 +118,7 @@ void setup()
     rtc.setMonth(BUILD_MONTH);   // Устанавливаем месяц
     rtc.setYear(BUILD_YEAR);    // Устанавливаем год
     rtc.setClockMode(false);    // установка режима 12/24h. True is 12-h, false is 24-hour.
+    DateTime timeCurrent_al = RTClib::now();
     rtc.setA1Time(0,0,0,10,0x0e, false, false, false);//setA1Time(byte A1Day, byte A1Hour, byte A1Minute, byte A1Second, byte AlarmBits, bool A1Dy, bool A1h12, bool A1PM)
     rtc.turnOnAlarm(1);
 

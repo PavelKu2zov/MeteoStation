@@ -2,6 +2,7 @@
 #define PIN_AM2305        5 // data pin AM2305
 #define PIN_CS_SD_CARD_1  31
 #define PIN_CS_SD_CARD_2  30
+
 #define PIN_INT_ALARM     19
 #define PIN_INT_BUTTON    18
 #define INT_ALARM         4// arduino pin 19, real int = int2
@@ -11,6 +12,8 @@
 #define NUMBER_ROWS_SCREEN        (6)
 #define NUMBER_SHOW_PARAM         (9)
 #define BUTTON_PIN                (A0)
+#define VBAT_PIN                  (A1)
+
 
 #define BUTTON_UP                       (3)
 #define BUTTON_LEFT                     (2)
@@ -32,6 +35,8 @@
 #define SCREEN_DATE_DAY_POS             ((LCD_NUMBER_PIXELS_WIDE_SYMBOL * 7)-1)
 #define SCREEN_DATE_MONTH_POS           ((LCD_NUMBER_PIXELS_WIDE_SYMBOL * 11)-1)
 #define SCREEN_DATE_YEAR_POS            (LCD_NUMBER_PIXELS_WIDE_SYMBOL * 12)
+
+#define NUM_SAMPLES 10
 
 typedef enum MENU_SCREEN_enum
 {
@@ -55,6 +60,19 @@ typedef enum TIME_MENU_STATE_SCREEN_enum
     SECOND
 }TIME_MENU_STATE_SCREEN;
 
+typedef enum ALARM_MENU_STATE_SCREEN_enum
+{
+    SCALE,
+    PERIOD
+}ALARM_MENU_STATE_SCREEN;
+
+typedef enum SCALE_enum
+{
+    SEC=0,
+    MIN,
+    HOURS
+}SCALE_enum;
+
 typedef struct DATE_str
 {
     uint8_t day;
@@ -71,14 +89,8 @@ typedef struct TIME_str
 
 typedef struct ALARM_str
 {
-    byte ADay;
-    byte AHour;
-    byte AMinute;
-    byte ASecond;
-    byte AlarmBits;
-    bool ADy;
-    bool Ah12;
-    bool APM;
+    SCALE_enum scale;
+    uint8_t period;
 }ALARM;
 
 typedef struct DATE_MENU_SCREEN_str
@@ -93,8 +105,15 @@ typedef struct TIME_MENU_SCREEN_str
     TIME time;
 }TIME_MENU_SCREEN;
 
+typedef struct ALARM_MENU_SCREEN_str
+{
+    ALARM_MENU_STATE_SCREEN state;
+    ALARM alarm;
+}ALARM_MENU_SCREEN;
+
 extern DATE_MENU_SCREEN menuDate;
 extern TIME_MENU_SCREEN menuTime;
+extern ALARM_MENU_SCREEN menuAlarm;
 extern bool alarmTime;
 extern byte buttonNum;
 extern bool pressAnyButton;
@@ -123,9 +142,12 @@ extern DS3231  rtc;
 extern File myFile;
 extern OneWire oneWire;
 extern DallasTemperature sensors;
-extern DHT humudity_sensor;
+extern DHT humidity_sensor;
 extern LPS25HB barometer;
 extern Nokia_LCD lcd;
+extern float r1;
+extern float r2;
+extern float vbat;            // calculated voltage
 
 extern int whbuttonPressed(void);
 extern void write2sd(void);
@@ -135,3 +157,5 @@ extern void ReadSensors(void);
 extern void printCurrentMenuOnLCD(MENU_SCREEN menuLCD);
 extern void SetDate(uint8_t  d , uint8_t  m, uint8_t yOff );
 extern void SetTime(uint8_t  h, uint8_t  m, uint8_t s);
+extern float ReadVbat(void);
+extern void SetAlarm(SCALE_enum  s, uint8_t  p);
