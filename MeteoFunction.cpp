@@ -90,44 +90,46 @@ void write2sd(void)
     if (SD.begin(PIN_CS_SD_CARD_1)) 
       {
         #ifdef DEBUG
-          Serial.println("initialization done.");
+            Serial.println("initialization done.");
         #endif
       
-        if ((reg==10) || ((currentUnixTime-lt_day)>(uint32_t)(86400))){
-          stringOne = "datalog"+String(count)+".txt"; //or .csv?
-          count=count+1;
-          reg = 0;
-          lt_day = currentUnixTime;
+        if ((reg==10) || ((currentUnixTime-lt_day)>(uint32_t)(86400)))
+        {
+            stringOne = "datalog"+String(count)+".txt"; //or .csv?
+            count=count+1;
+            reg = 0;
+            lt_day = currentUnixTime;
         }
         reg=reg+1;
 
         myFile = SD.open(stringOne, FILE_WRITE);
         if (myFile)
-        {    
-          myFile.print(t1);
-          myFile.print(" | ");
-          myFile.print(t2);
-          myFile.print(" | ");
-          myFile.print(t3);
-          myFile.print(" | ");     
-          myFile.print(pressurePascals);
-          myFile.print(" | ");
-          myFile.print(humidity);
-          myFile.print(" | ");
-		  myFile.print(vbat);
-          myFile.print(" | ");			   
-          myFile.print(timeCurrent.day());
-          myFile.print(".");
-          myFile.print(timeCurrent.month());
-          myFile.print(".");
-          myFile.print(timeCurrent.year());
-          myFile.print("  ");
-          myFile.print(timeCurrent.hour());
-          myFile.print(":");
-          myFile.print(timeCurrent.minute());
-          myFile.print(":");
-          myFile.println(timeCurrent.second());
-          myFile.close();
+        { 
+            cntWriteSD_1++;  
+            myFile.print(t1);
+            myFile.print(" | ");
+            myFile.print(t2);
+            myFile.print(" | ");
+            myFile.print(t3);
+            myFile.print(" | ");     
+            myFile.print(pressurePascals);
+            myFile.print(" | ");
+            myFile.print(humidity);
+            myFile.print(" | ");
+            myFile.print(vbat);
+            myFile.print(" | ");			   
+            myFile.print(timeCurrent.day());
+            myFile.print(".");
+            myFile.print(timeCurrent.month());
+            myFile.print(".");
+            myFile.print(timeCurrent.year());
+            myFile.print("  ");
+            myFile.print(timeCurrent.hour());
+            myFile.print(":");
+            myFile.print(timeCurrent.minute());
+            myFile.print(":");
+            myFile.println(timeCurrent.second());
+            myFile.close();
         } 
         else 
         {
@@ -158,30 +160,31 @@ void write2sd(void)
          myFile = SD.open(stringOne, FILE_WRITE);
         if (myFile)
         {  
-          myFile.print(t1);
-          myFile.print(" | ");
-          myFile.print(t2);
-          myFile.print(" | ");
-          myFile.print(t3);
-          myFile.print(" | ");     
-          myFile.print(pressurePascals);
-          myFile.print(" | ");
-          myFile.print(humidity);
-          myFile.print(" | ");
-		  myFile.print(vbat);
-          myFile.print(" | ");			   
-          myFile.print(timeCurrent.day());
-          myFile.print(".");
-          myFile.print(timeCurrent.month());
-          myFile.print(".");
-          myFile.print(timeCurrent.year());
-          myFile.print("  ");
-          myFile.print(timeCurrent.hour());
-          myFile.print(":");
-          myFile.print(timeCurrent.minute());
-          myFile.print(":");
-          myFile.println(timeCurrent.second());
-          myFile.close(); 
+            cntWriteSD_2++;
+            myFile.print(t1);
+            myFile.print(" | ");
+            myFile.print(t2);
+            myFile.print(" | ");
+            myFile.print(t3);
+            myFile.print(" | ");     
+            myFile.print(pressurePascals);
+            myFile.print(" | ");
+            myFile.print(humidity);
+            myFile.print(" | ");
+            myFile.print(vbat);
+            myFile.print(" | ");			   
+            myFile.print(timeCurrent.day());
+            myFile.print(".");
+            myFile.print(timeCurrent.month());
+            myFile.print(".");
+            myFile.print(timeCurrent.year());
+            myFile.print("  ");
+            myFile.print(timeCurrent.hour());
+            myFile.print(":");
+            myFile.print(timeCurrent.minute());
+            myFile.print(":");
+            myFile.println(timeCurrent.second());
+            myFile.close(); 
         } 
         else 
         {
@@ -629,14 +632,17 @@ void makeStringsForLCD(DATE *date, TIME *time, ALARM *alarm)
 	snprintf(screenValue[6],LCD_NUM_SYMBOL_IN_ROW,"Date  %d.%d.%d",date->day,date->month,date->year);
 	snprintf(screenValue[7],LCD_NUM_SYMBOL_IN_ROW,"Time  %d:%d:%d",time->hour,time->minute,time->second);
 	if (alarm->scale == HOURS) 
-  {
-    snprintf(screenValue[8],LCD_NUM_SYMBOL_IN_ROW,"Freq HOURS %d",alarm->period);
-  }
-  else if (alarm->scale == MIN)
-  {
-    snprintf(screenValue[8],LCD_NUM_SYMBOL_IN_ROW,"Freq MIN   %d",alarm->period);
-  }
-  else {snprintf(screenValue[8],LCD_NUM_SYMBOL_IN_ROW,"Freq SEC   %d",alarm->period);					 
+    {
+        snprintf(screenValue[8],LCD_NUM_SYMBOL_IN_ROW,"Freq HOURS %d",alarm->period);
+    }
+    else if (alarm->scale == MIN)
+    {
+        snprintf(screenValue[8],LCD_NUM_SYMBOL_IN_ROW,"Freq MIN   %d",alarm->period);
+    }
+    else {snprintf(screenValue[8],LCD_NUM_SYMBOL_IN_ROW,"Freq SEC   %d",alarm->period);
+    snprintf(screenValue[9],LCD_NUM_SYMBOL_IN_ROW,"Cnt_1   %d",cntWriteSD_1);
+    snprintf(screenValue[10],LCD_NUM_SYMBOL_IN_ROW,"Cnt_1   %d",cntWriteSD_2);
+  
 }// end of makeStringsForLCD()
 }
 

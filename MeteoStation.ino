@@ -62,6 +62,8 @@ float t1 = 0; //температура первого датчика
 float t2 = 0; //температура второго датчика
 float t3 = 0; //температура третьего датчика
 float Vbat = 0; // напряжение батареи
+uint32_t cntWriteSD_1 = 0;//счетчик записей на sd 1
+uint32_t cntWriteSD_2 = 0;//счетчик записей на sd 2
 DateTime timeCurrent; // текущее время
 DateTime timeOld;
 
