@@ -623,8 +623,8 @@ void makeStringsForLCD(DATE *date, TIME *time, ALARM *alarm)
 	dtostrf(humidity, 3, 1, str_temp);
 	snprintf(screenValue[3],LCD_NUM_SYMBOL_IN_ROW,"Hum     %s %%",str_temp);
 	dtostrf(pressurePascals, 6, 1, str_temp);
-	snprintf(screenValue[4],LCD_NUM_SYMBOL_IN_ROW,"P  %s Pa",str_temp);
-  dtostrf(vbat, 4, 2, str_temp);
+	snprintf(screenValue[4],LCD_NUM_SYMBOL_IN_ROW,"P  %s hPa",str_temp);
+    dtostrf(vbat, 4, 2, str_temp);
     snprintf(screenValue[5],LCD_NUM_SYMBOL_IN_ROW,"Vbat   %s V",str_temp);
 	snprintf(screenValue[6],LCD_NUM_SYMBOL_IN_ROW,"Date  %d.%d.%d",date->day,date->month,date->year);
 	snprintf(screenValue[7],LCD_NUM_SYMBOL_IN_ROW,"Time  %d:%d:%d",time->hour,time->minute,time->second);
@@ -653,12 +653,10 @@ void makeStringsForLCD(DATE *date, TIME *time, ALARM *alarm)
 //**************************************************************************************************
 void ReadSensors(void)
 {
-  timeCurrent = RTClib::now();  // чтение текущего времени
-	pressurePascals = barometer.getPressure_hPa();
-	humidity = humidity_sensor.readHumidity();
-	vbat = ReadVbat();
-
-	sensors.requestTemperatures();   // Send command to all the sensors for temperature conversion				
+    timeCurrent = RTClib::now();  // чтение текущего времени
+    pressurePascals = barometer.getPressure_hPa();
+    humidity = humidity_sensor.readHumidity();
+    vbat = ReadVbat();			
 
 	// если датчик t1 подсоединен считываем температуру
 	if (true == sensors.requestTemperaturesByAddress(t1_deviceAddress))

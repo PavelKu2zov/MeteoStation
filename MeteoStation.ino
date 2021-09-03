@@ -16,7 +16,6 @@
 #include <TimeLib.h>
 /********************************************************************/				
 
-
 DATE_MENU_SCREEN menuDate;
 TIME_MENU_SCREEN menuTime;
 ALARM_MENU_SCREEN menuAlarm;
@@ -141,46 +140,47 @@ void setup()
 
 void loop()
 {
-  if (true == pressAnyButton)
-  {Serial.println("\r\npressAnyButton");
-    ReadSensors();
-    LCDShow();
-    pressAnyButton = false;
-    timeOld = timeCurrent;
+    if (true == pressAnyButton)
+    {
+        Serial.println("\r\npressAnyButton");    
+        ReadSensors();
+        LCDShow();
+        pressAnyButton = false;
+        timeOld = timeCurrent;
         timeDelay = millis();
         timeDelayOld = timeDelay;
-  }
+    }
 
-  if (true == alarmTime)
-  {
-    ReadSensors();
-    write2sd();
+    if (true == alarmTime)
+    {
+        ReadSensors(void);
+        write2sd();
         alarmTime = false;
-  }
+    }
 
 
-  if ((timeCurrent.unixtime() - timeOld.unixtime())>5)
-  {
-    rtc.checkIfAlarm(ALARM_1);// сбрасываем флаг ALARM_1
-    attachInterrupt(INT_ALARM,isrAlarm,FALLING);  // прерывание от RTC
-    attachInterrupt(INT_BUTTON,isrButtonPressed,FALLING); // прерывание от button
-    lcd.clear();
-    lcd.setCursor(0,2);
-    lcd.print("Sleep");
-    sleep_mode(); // Переводим МК в сон
-    lcd.clear();
-    lcd.print("Wakeup");
-  }
-  else
-  {
+    if ((timeCurrent.unixtime() - timeOld.unixtime())>TIME_SCREEN_ON)
+    {
+        rtc.checkIfAlarm(ALARM_1);// сбрасываем флаг ALARM_1
+        attachInterrupt(INT_ALARM,isrAlarm,FALLING);  // прерывание от RTC
+        attachInterrupt(INT_BUTTON,isrButtonPressed,FALLING); // прерывание от button
+        lcd.clear();
+        lcd.setCursor(0,2);
+        lcd.print("Sleep");
+        sleep_mode(); // Переводим МК в сон
+        lcd.clear();
+        lcd.print("Wakeup");
+    }
+    else
+    {
         // читаем время RTC раз в секунду
-    timeDelay = millis();
-    if ((timeDelay - timeDelayOld)>1000)
+        timeDelay = millis();
+        if ((timeDelay - timeDelayOld)>TIME_UPDATE_LCD_TIME)
         {
             timeCurrent = RTClib::now();  // чтение текущего времени
             timeDelayOld = timeDelay;
         }
-  }
+    }
 
 
 }

@@ -38,6 +38,9 @@
 
 #define NUM_SAMPLES 10
 
+#define TIME_SCREEN_ON            (10)//in seconds
+
+
 typedef enum MENU_SCREEN_enum
 {
     MAIN_MENU=0,
