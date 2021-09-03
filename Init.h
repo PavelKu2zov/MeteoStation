@@ -151,6 +151,8 @@ extern Nokia_LCD lcd;
 extern float r1;
 extern float r2;
 extern float vbat;            // calculated voltage
+extern uint32_t cntWriteSD_1;
+extern uint32_t cntWriteSD_2;
 
 extern int whbuttonPressed(void);
 extern void write2sd(void);
