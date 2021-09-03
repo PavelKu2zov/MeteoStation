@@ -14,6 +14,8 @@
 #include "Init.h"
 #include <math.h>
 #include <TimeLib.h>
+#include <EEPROM.h>
+
 /********************************************************************/				
 
 DATE_MENU_SCREEN menuDate;

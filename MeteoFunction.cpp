@@ -13,7 +13,8 @@
 #include <Nokia_LCD.h> //nokia 5110 display
 #include "Init.h"
 #include <math.h>				 
-#include <TimeLib.h>					  
+#include <TimeLib.h>
+#include <EEPROM.h>				  
 
 
 //**************************************************************************************************
