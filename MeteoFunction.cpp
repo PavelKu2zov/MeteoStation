@@ -79,10 +79,11 @@ void write2sd(void)
 {
 	static int reg = 0;
     static int count = 1;
-    static int lt_day=0;
+    static uint32_t lt_day=0;
     static String stringOne("datalog1.txt");
-    int currentUnixTime;				   
+    uint32_t currentUnixTime;				   
       
+	currentUnixTime = timeCurrent.unixtime();									  
     #ifdef DEBUG
     Serial.print("Initializing SD card #1...");
     #endif
@@ -92,11 +93,11 @@ void write2sd(void)
           Serial.println("initialization done.");
         #endif
       
-        if ((reg==10) || ((currentUnixTime-lt_day)>(60*60*24))){
+        if ((reg==10) || ((currentUnixTime-lt_day)>(uint32_t)(86400))){
           stringOne = "datalog"+String(count)+".txt"; //or .csv?
           count=count+1;
           reg = 0;
-          lt_day = timeCurrent.unixtime();
+          lt_day = currentUnixTime;
         }
         reg=reg+1;
 
@@ -113,6 +114,8 @@ void write2sd(void)
           myFile.print(" | ");
           myFile.print(humidity);
           myFile.print(" | ");
+		  myFile.print(vbat);
+          myFile.print(" | ");			   
           myFile.print(timeCurrent.day());
           myFile.print(".");
           myFile.print(timeCurrent.month());
@@ -152,7 +155,7 @@ void write2sd(void)
           Serial.println("initialization done.");
         #endif
       
-         myFile = SD.open("stringOne.txt", FILE_WRITE);
+         myFile = SD.open(stringOne, FILE_WRITE);
         if (myFile)
         {  
           myFile.print(t1);
@@ -165,6 +168,8 @@ void write2sd(void)
           myFile.print(" | ");
           myFile.print(humidity);
           myFile.print(" | ");
+		  myFile.print(vbat);
+          myFile.print(" | ");			   
           myFile.print(timeCurrent.day());
           myFile.print(".");
           myFile.print(timeCurrent.month());
@@ -960,7 +965,7 @@ void SetTime(uint8_t  h, uint8_t  m, uint8_t s)
 //                sample count->no samples
 //                r1=30kom
 //                r2=10kom
-//                calibration value = 6.24/6=1.029. measured 6 showed 6.24 on voltimeter         \
+//                calibration value = 6.17/6.2=0.99516. measured 6 showed 6.24 on voltimeter         \
 //                NUM_SAMPLES = 10 NO measures
 //**************************************************************************************************
 float ReadVbat(void)
@@ -974,7 +979,7 @@ float ReadVbat(void)
           sample_count++;
       }
       // use 3.3 for a 3.3V ADC reference voltage
-      voltage = 1.029*(sum/NUM_SAMPLES)* (3.3/1024.0)/(r1/(r1+r2));
+      voltage = 0.99516*(sum/NUM_SAMPLES)* (3.3/1024.0)/(r1/(r1+r2));
       // send voltage for display o n Serial Monitor
       // divides by 6.24/6 is the calibrated voltage divide
 
