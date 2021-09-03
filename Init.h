@@ -10,7 +10,7 @@
 
 #define ALARM_1           1
 #define NUMBER_ROWS_SCREEN        (6)
-#define NUMBER_SHOW_PARAM         (9)
+#define NUMBER_SHOW_PARAM         (11)
 #define BUTTON_PIN                (A0)
 #define VBAT_PIN                  (A1)
 
@@ -31,12 +31,17 @@
 #define SCREEN_DATE_POS                 (6)
 #define SCREEN_TIME_POS                 (7)
 #define SCREEN_ALARM_POS                (8)
+#define SCREEN_CNT1_POS                 (9)
+#define SCREEN_CNT2_POS                 (10)
 #define LCD_NUM_SYMBOL_IN_ROW			(14)
 #define SCREEN_DATE_DAY_POS             ((LCD_NUMBER_PIXELS_WIDE_SYMBOL * 7)-1)
 #define SCREEN_DATE_MONTH_POS           ((LCD_NUMBER_PIXELS_WIDE_SYMBOL * 11)-1)
 #define SCREEN_DATE_YEAR_POS            (LCD_NUMBER_PIXELS_WIDE_SYMBOL * 12)
 
 #define NUM_SAMPLES 10
+
+#define TIME_SCREEN_ON            (10)//in seconds
+
 
 typedef enum MENU_SCREEN_enum
 {
@@ -148,6 +153,8 @@ extern Nokia_LCD lcd;
 extern float r1;
 extern float r2;
 extern float vbat;            // calculated voltage
+extern uint32_t cntWriteSD_1;
+extern uint32_t cntWriteSD_2;
 
 extern int whbuttonPressed(void);
 extern void write2sd(void);

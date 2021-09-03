@@ -16,7 +16,6 @@
 #include <TimeLib.h>
 /********************************************************************/				
 
-
 DATE_MENU_SCREEN menuDate;
 TIME_MENU_SCREEN menuTime;
 ALARM_MENU_SCREEN menuAlarm;
@@ -63,6 +62,8 @@ float t1 = 0; //температура первого датчика
 float t2 = 0; //температура второго датчика
 float t3 = 0; //температура третьего датчика
 float Vbat = 0; // напряжение батареи
+uint32_t cntWriteSD_1 = 0;//счетчик записей на sd 1
+uint32_t cntWriteSD_2 = 0;//счетчик записей на sd 2
 DateTime timeCurrent; // текущее время
 DateTime timeOld;
 
@@ -141,46 +142,47 @@ void setup()
 
 void loop()
 {
-  if (true == pressAnyButton)
-  {Serial.println("\r\npressAnyButton");
-    ReadSensors();
-    LCDShow();
-    pressAnyButton = false;
-    timeOld = timeCurrent;
+    if (true == pressAnyButton)
+    {
+        Serial.println("\r\npressAnyButton");    
+        ReadSensors();
+        LCDShow();
+        pressAnyButton = false;
+        timeOld = timeCurrent;
         timeDelay = millis();
         timeDelayOld = timeDelay;
-  }
+    }
 
-  if (true == alarmTime)
-  {
-    ReadSensors();
-    write2sd();
+    if (true == alarmTime)
+    {
+        ReadSensors(void);
+        write2sd();
         alarmTime = false;
-  }
+    }
 
 
-  if ((timeCurrent.unixtime() - timeOld.unixtime())>5)
-  {
-    rtc.checkIfAlarm(ALARM_1);// сбрасываем флаг ALARM_1
-    attachInterrupt(INT_ALARM,isrAlarm,FALLING);  // прерывание от RTC
-    attachInterrupt(INT_BUTTON,isrButtonPressed,FALLING); // прерывание от button
-    lcd.clear();
-    lcd.setCursor(0,2);
-    lcd.print("Sleep");
-    sleep_mode(); // Переводим МК в сон
-    lcd.clear();
-    lcd.print("Wakeup");
-  }
-  else
-  {
+    if ((timeCurrent.unixtime() - timeOld.unixtime())>TIME_SCREEN_ON)
+    {
+        rtc.checkIfAlarm(ALARM_1);// сбрасываем флаг ALARM_1
+        attachInterrupt(INT_ALARM,isrAlarm,FALLING);  // прерывание от RTC
+        attachInterrupt(INT_BUTTON,isrButtonPressed,FALLING); // прерывание от button
+        lcd.clear();
+        lcd.setCursor(0,2);
+        lcd.print("Sleep");
+        sleep_mode(); // Переводим МК в сон
+        lcd.clear();
+        lcd.print("Wakeup");
+    }
+    else
+    {
         // читаем время RTC раз в секунду
-    timeDelay = millis();
-    if ((timeDelay - timeDelayOld)>1000)
+        timeDelay = millis();
+        if ((timeDelay - timeDelayOld)>TIME_UPDATE_LCD_TIME)
         {
             timeCurrent = RTClib::now();  // чтение текущего времени
             timeDelayOld = timeDelay;
         }
-  }
+    }
 
 
 }
