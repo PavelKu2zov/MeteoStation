@@ -632,14 +632,17 @@ void makeStringsForLCD(DATE *date, TIME *time, ALARM *alarm)
 	snprintf(screenValue[6],LCD_NUM_SYMBOL_IN_ROW,"Date  %d.%d.%d",date->day,date->month,date->year);
 	snprintf(screenValue[7],LCD_NUM_SYMBOL_IN_ROW,"Time  %d:%d:%d",time->hour,time->minute,time->second);
 	if (alarm->scale == HOURS) 
-  {
-    snprintf(screenValue[8],LCD_NUM_SYMBOL_IN_ROW,"Freq HOURS %d",alarm->period);
-  }
-  else if (alarm->scale == MIN)
-  {
-    snprintf(screenValue[8],LCD_NUM_SYMBOL_IN_ROW,"Freq MIN   %d",alarm->period);
-  }
-  else {snprintf(screenValue[8],LCD_NUM_SYMBOL_IN_ROW,"Freq SEC   %d",alarm->period);					 
+    {
+        snprintf(screenValue[8],LCD_NUM_SYMBOL_IN_ROW,"Freq HOURS %d",alarm->period);
+    }
+    else if (alarm->scale == MIN)
+    {
+        snprintf(screenValue[8],LCD_NUM_SYMBOL_IN_ROW,"Freq MIN   %d",alarm->period);
+    }
+    else {snprintf(screenValue[8],LCD_NUM_SYMBOL_IN_ROW,"Freq SEC   %d",alarm->period);
+    snprintf(screenValue[9],LCD_NUM_SYMBOL_IN_ROW,"Cnt_1   %d",cntWriteSD_1);
+    snprintf(screenValue[10],LCD_NUM_SYMBOL_IN_ROW,"Cnt_1   %d",cntWriteSD_2);
+  
 }// end of makeStringsForLCD()
 }
 
