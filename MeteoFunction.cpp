@@ -79,8 +79,11 @@ int whbuttonPressed(void)
 void write2sd(void)
 {
 	static int reg = 0;
+    static int reg2 = 0;
     static int count = 1;
+    static int count2 = 1;
     static uint32_t lt_day=0;
+    static uint32_t lt_day1=0;
     static String stringOne("datalog1.txt");
     uint32_t currentUnixTime;				   
       
@@ -94,7 +97,7 @@ void write2sd(void)
             Serial.println("initialization done.");
         #endif
       
-        if ((reg==10) || ((currentUnixTime-lt_day)>(uint32_t)(86400)))
+        if ((reg==10) || ((currentUnixTime-lt_day)>(uint32_t)(SECONDS_IN_DAY)))
         {
             stringOne = "datalog"+String(count)+".txt"; //or .csv?
             count=count+1;
@@ -152,6 +155,16 @@ void write2sd(void)
     #ifdef DEBUG
     Serial.print("Initializing SD card #2...");
     #endif
+    
+    if ((reg2==10) || ((currentUnixTime-lt_day1)>(uint32_t)(SECONDS_IN_DAY)))
+    {
+        stringOne = "datalog"+String(count2)+".txt"; //or .csv?
+        count2=count2+1;
+        reg = 0;
+        lt_day1 = currentUnixTime;
+    }
+    reg2=reg2+1;
+    
     if (SD.begin(PIN_CS_SD_CARD_2)) 
       {
         #ifdef DEBUG

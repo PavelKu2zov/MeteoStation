@@ -41,7 +41,7 @@
 #define NUM_SAMPLES 10
 
 #define TIME_SCREEN_ON            (10)//in seconds
-
+#define SECONDS_IN_DAY            (86400) 
 
 typedef enum MENU_SCREEN_enum
 {
